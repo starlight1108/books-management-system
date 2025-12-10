@@ -14,7 +14,8 @@ export const useBorrowStore = defineStore('borrow', {
       this.error = null
       try {
         const response = await api.getBorrows()
-        this.borrows = response.data
+        // 后端返回的是包含分页信息的对象，需要提取borrows数组
+        this.borrows = response.data.borrows || []
       } catch (error) {
         this.error = error.message
         console.error('获取借阅记录失败:', error)

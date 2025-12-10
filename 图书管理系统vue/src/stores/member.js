@@ -14,7 +14,8 @@ export const useMemberStore = defineStore('member', {
       this.error = null
       try {
         const response = await api.getMembers()
-        this.members = response.data
+        // 后端返回的是包含分页信息的对象，需要提取members数组
+        this.members = response.data.members || []
       } catch (error) {
         this.error = error.message
         console.error('获取会员列表失败:', error)
