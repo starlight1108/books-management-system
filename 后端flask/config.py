@@ -12,6 +12,11 @@ class Config:
         f'sqlite:///{os.path.join(basedir, "library.db")}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
+    # JWT配置
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'jwt-secret-string'
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+    
     # 应用配置
     DEBUG = True
     TESTING = False

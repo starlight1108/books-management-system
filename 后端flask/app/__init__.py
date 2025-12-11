@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 from config import Config
 
 def create_app():
@@ -10,15 +11,19 @@ def create_app():
     from app.extensions import db
     db.init_app(app)
     
+    # 初始化JWT
+    jwt = JWTManager(app)
+    
     # 配置CORS，允许前端地址访问
-    CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173"]}})
+    CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174", "http://127.0.0.1:5174"]}})
     
     # 注册蓝图
-    from app.routes import books, members, borrows, statistics
+    from app.routes import books, members, borrows, statistics, auth
     app.register_blueprint(books.bp, url_prefix='/api')
     app.register_blueprint(members.bp, url_prefix='/api')
     app.register_blueprint(borrows.bp, url_prefix='/api')
     app.register_blueprint(statistics.bp, url_prefix='/api')
+    app.register_blueprint(auth.bp, url_prefix='/api')
     
     # 创建数据库表
     with app.app_context():
