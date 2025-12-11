@@ -1,12 +1,14 @@
 from app.extensions import db
 from datetime import datetime
+import bcrypt
 
 class Member(db.Model):
     __tablename__ = 'members'
     
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    name = db.Column(db.String(100), nullable=False, unique=True)  # 添加唯一性约束
+    email = db.Column(db.String(120), unique=True, nullable=True)  # 改为可选
+    password_hash = db.Column(db.String(128), nullable=False)  # 添加密码哈希字段
     phone = db.Column(db.String(20))
     address = db.Column(db.Text)
     join_date = db.Column(db.Date, default=datetime.utcnow)
@@ -17,6 +19,18 @@ class Member(db.Model):
     
     # 与借阅记录的关系
     borrows = db.relationship('Borrow', backref='member', lazy=True)
+    
+    def set_password(self, password):
+        """设置密码，进行哈希处理"""
+        password_bytes = password.encode('utf-8')
+        salt = bcrypt.gensalt()
+        self.password_hash = bcrypt.hashpw(password_bytes, salt).decode('utf-8')
+    
+    def check_password(self, password):
+        """验证密码"""
+        password_bytes = password.encode('utf-8')
+        hash_bytes = self.password_hash.encode('utf-8')
+        return bcrypt.checkpw(password_bytes, hash_bytes)
     
     def to_dict(self):
         return {
