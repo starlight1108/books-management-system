@@ -57,3 +57,6 @@ venv.bak/
 # 操作系统
 .DS_Store
 Thumbs.db
+后端flask/__pycache__/config.cpython-313.pyc
+后端flask/app/__pycache__/__init__.cpython-313.pyc
+后端flask/app/models/__pycache__/member.cpython-313.pyc
