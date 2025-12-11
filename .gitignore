@@ -1,0 +1,38 @@
+# Python编译文件
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+
+# Python虚拟环境
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# 数据库文件
+*.db
+*.sqlite3
+
+# IDE配置文件
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 日志文件
+*.log
+
+# 临时文件
+*.tmp
+*.temp
+后端flask/app/__pycache__/__init__.cpython-313.pyc
+后端flask/app/__pycache__/__init__.cpython-313.pyc
+后端flask/app/__pycache__/__init__.cpython-313.pyc
