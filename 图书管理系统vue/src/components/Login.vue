@@ -13,9 +13,9 @@
         label-width="0"
         class="login-form"
       >
-        <el-form-item prop="username">
+        <el-form-item prop="name">
           <el-input 
-            v-model="loginData.username" 
+            v-model="loginData.name" 
             placeholder="用户名"
             prefix-icon="User"
             size="large"
@@ -59,20 +59,21 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
+import axios from 'axios'
 
 const router = useRouter()
 const loginForm = ref(null)
 const loading = ref(false)
 
 const loginData = reactive({
-  username: '',
+  name: '',
   password: ''
 })
 
 const loginRules = {
-  username: [
+  name: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 20, message: '用户名长度在 3 到 20 个字符', trigger: 'blur' }
+    { min: 2, max: 20, message: '用户名长度在 2 到 20 个字符', trigger: 'blur' }
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
@@ -81,25 +82,37 @@ const loginRules = {
 }
 
 const handleLogin = () => {
-  loginForm.value.validate((valid) => {
+  loginForm.value.validate(async (valid) => {
     if (valid) {
       loading.value = true
       
-      // 这里应该调用API进行登录验证
-      // 模拟登录过程
-      setTimeout(() => {
+      try {
+        // 调用后端API进行登录验证
+        const response = await axios.post('http://localhost:5000/api/login', {
+          name: loginData.name,
+          password: loginData.password
+        })
+        
         loading.value = false
         
-        // 假设登录成功
+        // 登录成功
         ElMessage.success('登录成功')
         
-        // 保存登录状态到localStorage
+        // 保存令牌和用户信息到localStorage
+        localStorage.setItem('access_token', response.data.access_token)
+        localStorage.setItem('user', JSON.stringify(response.data.user))
         localStorage.setItem('isLogin', 'true')
-        localStorage.setItem('username', loginData.username)
+        
+        // 设置axios默认请求头
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`
         
         // 跳转到主页
         router.push('/books')
-      }, 1000)
+      } catch (error) {
+        loading.value = false
+        const errorMessage = error.response?.data?.error || '登录失败，请重试'
+        ElMessage.error(errorMessage)
+      }
     } else {
       return false
     }
@@ -122,10 +135,10 @@ const goToRegister = () => {
 
 .login-box {
   width: 400px;
-  padding: 30px;
-  background: white;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 10px;
-  box-shadow: 0 15px 35px rgba(50, 50, 93, 0.1), 0 5px 15px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
 }
 
 .login-header {
@@ -134,12 +147,12 @@ const goToRegister = () => {
 }
 
 .login-header h2 {
-  color: #303133;
+  color: #333;
   margin-bottom: 10px;
 }
 
 .login-header p {
-  color: #909399;
+  color: #666;
   font-size: 14px;
 }
 
@@ -147,10 +160,18 @@ const goToRegister = () => {
   margin-top: 20px;
 }
 
+.login-form .el-form-item {
+  margin-bottom: 20px;
+}
+
 .login-footer {
   text-align: center;
   margin-top: 20px;
   font-size: 14px;
-  color: #606266;
+  color: #666;
+}
+
+.login-footer .el-link {
+  margin-left: 5px;
 }
 </style>
