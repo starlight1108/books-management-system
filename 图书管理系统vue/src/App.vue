@@ -109,7 +109,9 @@ const handleCommand = (command) => {
 onMounted(() => {
   const isLogin = localStorage.getItem('isLogin') === 'true'
   if (isLogin) {
-    username.value = localStorage.getItem('username') || '用户'
+    const userData = JSON.parse(localStorage.getItem('user'))
+    username.value = userData.name  // 获取用户名
+    // username.value = localStorage.getItem('username') || '用户'
   }
 })
 </script>
