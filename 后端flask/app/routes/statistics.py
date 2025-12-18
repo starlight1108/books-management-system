@@ -55,7 +55,10 @@ def get_statistics():
         
         trend_data = {}
         for date, count in borrow_trend:
-            trend_data[date.isoformat()] = count
+            # 确保日期是字符串格式
+            date_str = str(date) if date else None
+            if date_str:
+                trend_data[date_str] = count
         
         # 热门图书（借阅次数最多的图书）
         popular_books = db.session.query(
@@ -119,15 +122,17 @@ def get_overview():
         # 会员增长趋势（最近6个月）
         six_months_ago = datetime.utcnow().date() - timedelta(days=180)
         member_growth = db.session.query(
-            db.func.date(Member.join_date).label('month'),
+            db.func.year(Member.join_date).label('year'),
+            db.func.month(Member.join_date).label('month'),
             db.func.count(Member.id).label('count')
         ).filter(
             db.func.date(Member.join_date) >= six_months_ago
         ).group_by(db.func.year(Member.join_date), db.func.month(Member.join_date)).all()
         
         growth_data = {}
-        for month, count in member_growth:
-            growth_data[month.strftime('%Y-%m')] = count
+        for year, month, count in member_growth:
+            month_key = f"{year}-{month:02d}"
+            growth_data[month_key] = count
         
         overview = {
             'monthly_borrows': monthly_borrows,

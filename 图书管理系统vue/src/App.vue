@@ -21,7 +21,7 @@
             </el-menu-item>
             <el-menu-item index="/members">
               <el-icon><User /></el-icon>
-              <span>会员管理</span>
+              <span>用户管理</span>
             </el-menu-item>
             <el-menu-item index="/borrows">
               <el-icon><Document /></el-icon>
