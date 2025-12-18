@@ -60,11 +60,12 @@
         <el-form-item label="选择图书" prop="book_id">
           <el-select
             v-model="borrowForm.book_id"
-            placeholder="请选择图书"
+            placeholder="请输入图书名称搜索"
             filterable
             remote
             :remote-method="searchBooks"
             :loading="bookLoading"
+            @change="handleBookChange"
           >
             <el-option
               v-for="book in availableBooks"
@@ -79,26 +80,30 @@
               </span>
             </el-option>
           </el-select>
+          <div v-if="selectedBook" class="book-info">
+            <p><strong>ISBN:</strong> {{ selectedBook.isbn }}</p>
+          </div>
         </el-form-item>
         <el-form-item label="选择会员" prop="member_id">
           <el-select
             v-model="borrowForm.member_id"
-            placeholder="请选择会员"
+            placeholder="请输入手机号搜索"
             filterable
             remote
             :remote-method="searchMembers"
             :loading="memberLoading"
+            @change="handleMemberChange"
           >
             <el-option
               v-for="member in members"
               :key="member.id"
-              :label="member.name"
+              :label="`${member.name} - ${member.phone}`"
               :value="member.id"
               :disabled="member.status !== 'active'"
             >
               <span style="float: left">{{ member.name }}</span>
               <span style="float: right; color: #8492a6; font-size: 13px">
-                {{ member.status === 'active' ? '正常' : '停用' }}
+                {{ member.phone }}
               </span>
             </el-option>
           </el-select>
@@ -139,6 +144,8 @@ const bookLoading = ref(false)
 const memberLoading = ref(false)
 const availableBooks = ref([])
 const members = ref([])
+const selectedBook = ref(null)
+const selectedMember = ref(null)
 
 const borrowForm = reactive({
   book_id: '',
@@ -167,6 +174,7 @@ const disabledDate = (date) => {
 const searchBooks = async (query) => {
   if (!query) {
     availableBooks.value = []
+    selectedBook.value = null
     return
   }
   
@@ -184,19 +192,40 @@ const searchBooks = async (query) => {
 const searchMembers = async (query) => {
   if (!query) {
     members.value = []
+    selectedMember.value = null
     return
   }
   
   memberLoading.value = true
   try {
     const response = await api.getMembers()
-    members.value = response.data.filter(member => 
-      member.name.toLowerCase().includes(query.toLowerCase())
+    // 后端返回的是包含members属性的对象，需要提取members数组
+    const membersData = response.data.members || []
+    // 支持通过手机号或姓名搜索
+    members.value = membersData.filter(member => 
+      member.name.toLowerCase().includes(query.toLowerCase()) ||
+      (member.phone && member.phone.includes(query))
     )
   } catch (error) {
     console.error('搜索会员失败:', error)
   } finally {
     memberLoading.value = false
+  }
+}
+
+const handleBookChange = (bookId) => {
+  if (bookId) {
+    selectedBook.value = availableBooks.value.find(book => book.id === bookId)
+  } else {
+    selectedBook.value = null
+  }
+}
+
+const handleMemberChange = (memberId) => {
+  if (memberId) {
+    selectedMember.value = members.value.find(member => member.id === memberId)
+  } else {
+    selectedMember.value = null
   }
 }
 
@@ -236,6 +265,8 @@ const resetForm = () => {
   })
   availableBooks.value = []
   members.value = []
+  selectedBook.value = null
+  selectedMember.value = null
   borrowFormRef.value?.clearValidate()
 }
 
@@ -259,5 +290,19 @@ onMounted(() => {
 .overdue {
   color: #f56c6c;
   font-weight: bold;
+}
+
+.book-info {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
+  border-left: 4px solid #409eff;
+}
+
+.book-info p {
+  margin: 0;
+  font-size: 14px;
+  color: #606266;
 }
 </style>
