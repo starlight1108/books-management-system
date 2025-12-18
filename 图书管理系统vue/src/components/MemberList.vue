@@ -14,9 +14,9 @@
       <el-table-column prop="email" label="邮箱" width="200" />
       <el-table-column prop="phone" label="电话" width="120" />
       <el-table-column prop="address" label="地址" min-width="200" show-overflow-tooltip />
-      <el-table-column prop="membership_date" label="注册日期" width="120">
+      <el-table-column prop="join_date" label="注册日期" width="120">
         <template #default="{ row }">
-          {{ formatDate(row.membership_date) }}
+          {{ formatDate(row.join_date) }}
         </template>
       </el-table-column>
       <el-table-column prop="status" label="状态" width="80">
