@@ -1,8 +1,9 @@
 <template>
   <div class="borrow-list">
     <div class="header">
-      <h2>借阅管理</h2>
-      <el-button type="primary" @click="showBorrowDialog = true">
+      <h2>{{ authStore.isAdmin ? '借阅管理' : '借阅历史' }}</h2>
+      <!-- 只有管理员可以新增借阅 -->
+      <el-button v-if="authStore.isAdmin" type="primary" @click="showBorrowDialog = true">
         <el-icon><Plus /></el-icon>
         新增借阅
       </el-button>
@@ -132,11 +133,13 @@ import { Plus } from '@element-plus/icons-vue'
 import { useBorrowStore } from '@/stores/borrow'
 import { useBookStore } from '@/stores/book'
 import { useMemberStore } from '@/stores/member'
+import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
 
 const borrowStore = useBorrowStore()
 const bookStore = useBookStore()
 const memberStore = useMemberStore()
+const authStore = useAuthStore()
 
 const showBorrowDialog = ref(false)
 const borrowFormRef = ref(null)

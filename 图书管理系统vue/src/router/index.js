@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import BookList from '@/components/BookList.vue'
 import MemberList from '@/components/MemberList.vue'
 import BorrowList from '@/components/BorrowList.vue'
@@ -33,7 +34,7 @@ const router = createRouter({
       path: '/members',
       name: 'Members',
       component: MemberList,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: '/borrows',
@@ -45,19 +46,25 @@ const router = createRouter({
       path: '/statistics',
       name: 'Statistics',
       component: Statistics,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, requiresAdmin: true }
     }
   ],
 })
 
 // 添加路由守卫，检查用户是否已登录
 router.beforeEach((to, from, next) => {
-  const isLogin = localStorage.getItem('isLogin') === 'true'
-  
-  if (to.meta.requiresAuth && !isLogin) {
+  const authStore = useAuthStore()
+
+  // 检查是否需要管理员权限的路由
+  const requiresAdmin = to.meta.requiresAdmin || false
+
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     // 如果需要登录但用户未登录，重定向到登录页
     next('/login')
-  } else if ((to.path === '/login' || to.path === '/register') && isLogin) {
+  } else if (requiresAdmin && !authStore.isAdmin) {
+    // 如果需要管理员权限但用户不是管理员，重定向到首页
+    next('/books')
+  } else if ((to.path === '/login' || to.path === '/register') && authStore.isAuthenticated) {
     // 如果用户已登录但访问登录/注册页，重定向到首页
     next('/books')
   } else {

@@ -82,7 +82,7 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Lock, Phone } from '@element-plus/icons-vue'
-import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const registerForm = ref(null)
@@ -147,38 +147,31 @@ const registerRules = {
   ]
 }
 
+const authStore = useAuthStore()
+
 const handleRegister = () => {
   registerForm.value.validate(async (valid) => {
     if (valid) {
       loading.value = true
       
-      try {
-        // 调用后端API进行注册
-        const response = await axios.post('http://localhost:5000/api/register', {
-          name: registerData.name,
-          password: registerData.password,
-          phone: registerData.phone
-        })
-        
-        loading.value = false
-        
+      // 使用auth store进行注册
+      const result = await authStore.register({
+        name: registerData.name,
+        password: registerData.password,
+        phone: registerData.phone
+      })
+      
+      loading.value = false
+      
+      if (result.success) {
         // 注册成功
-        ElMessage.success('注册成功，请登录')
-        
-        // 保存令牌和用户信息到localStorage
-        localStorage.setItem('access_token', response.data.access_token)
-        localStorage.setItem('user', JSON.stringify(response.data.user))
-        localStorage.setItem('isLogin', 'true')
-        
-        // 设置axios默认请求头
-        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`
+        ElMessage.success('注册成功')
         
         // 跳转到主页
         router.push('/books')
-      } catch (error) {
-        loading.value = false
-        const errorMessage = error.response?.data?.error || '注册失败，请重试'
-        ElMessage.error(errorMessage)
+      } else {
+        // 注册失败
+        ElMessage.error(result.message)
       }
     } else {
       return false

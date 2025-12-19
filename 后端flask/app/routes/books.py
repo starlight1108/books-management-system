@@ -118,6 +118,15 @@ def update_book(book_id):
         if 'description' in data:
             book.description = data['description']
         
+        # 更新ISBN并验证唯一性
+        if 'isbn' in data:
+            new_isbn = data['isbn']
+            # 检查ISBN是否被其他图书使用
+            existing_book = Book.query.filter_by(isbn=new_isbn).first()
+            if existing_book and existing_book.id != book_id:
+                return jsonify({'error': 'ISBN已存在'}), 400
+            book.isbn = new_isbn
+        
         # 处理出版日期
         if 'publish_date' in data:
             if data['publish_date']:

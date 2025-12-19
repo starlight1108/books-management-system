@@ -1,8 +1,9 @@
 <template>
   <div class="book-list">
     <div class="header">
-      <h2>图书管理</h2>
-      <el-button type="primary" @click="showAddDialog = true">
+      <h2>{{ authStore.isAdmin ? '图书管理' : '图书' }}</h2>
+      <!-- 只有管理员可以添加图书 -->
+      <el-button v-if="authStore.isAdmin" type="primary" @click="showAddDialog = true">
         <el-icon><Plus /></el-icon>
         添加图书
       </el-button>
@@ -44,7 +45,8 @@
       <el-table-column prop="total_copies" label="总册数" width="80" align="center" />
       <el-table-column prop="available_copies" label="可借册数" width="90" align="center" />
       <el-table-column prop="publisher" label="出版社" width="150" show-overflow-tooltip />
-      <el-table-column label="操作" width="150" fixed="right">
+      <!-- 只有管理员才能看到操作列 -->
+      <el-table-column v-if="authStore.isAdmin" label="操作" width="150" fixed="right">
         <template #default="{ row }">
           <el-button type="primary" link @click="editBook(row)">编辑</el-button>
           <el-button type="danger" link @click="deleteBook(row)">删除</el-button>
@@ -97,14 +99,16 @@
           <el-input
             v-model="bookForm.description"
             type="textarea"
-            :rows="3"
             placeholder="请输入图书描述"
+            :rows="4"
           />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showAddDialog = false">取消</el-button>
-        <el-button type="primary" @click="submitBook">确定</el-button>
+        <div class="dialog-footer">
+          <el-button @click="showAddDialog = false">取消</el-button>
+          <el-button type="primary" @click="submitForm">确认</el-button>
+        </div>
       </template>
     </el-dialog>
   </div>
@@ -115,8 +119,10 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search } from '@element-plus/icons-vue'
 import { useBookStore } from '@/stores/book'
+import { useAuthStore } from '@/stores/auth'
 
 const bookStore = useBookStore()
+const authStore = useAuthStore()
 
 const searchQuery = ref('')
 const categoryFilter = ref('')
@@ -201,46 +207,51 @@ const deleteBook = async (book) => {
     
     await bookStore.deleteBook(book.id)
     ElMessage.success('删除成功')
+    fetchBooks()
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error(error.response?.data?.error || '删除失败')
+      ElMessage.error('删除失败')
     }
   }
 }
 
-const submitBook = async () => {
-  try {
-    await bookFormRef.value.validate()
-    
-    if (editingBook.value) {
-      await bookStore.updateBook(editingBook.value.id, bookForm)
-      ElMessage.success('更新成功')
-    } else {
-      await bookStore.addBook(bookForm)
-      ElMessage.success('添加成功')
+const submitForm = async () => {
+  if (!bookFormRef.value) return
+  
+  await bookFormRef.value.validate(async (valid) => {
+    if (valid) {
+      try {
+        if (editingBook.value) {
+          // 更新图书
+          await bookStore.updateBook(editingBook.value.id, bookForm)
+          ElMessage.success('更新成功')
+        } else {
+          // 添加图书
+          await bookStore.addBook(bookForm)
+          ElMessage.success('添加成功')
+        }
+        showAddDialog.value = false
+        fetchBooks()
+        
+        // 重置表单
+        Object.assign(bookForm, {
+          title: '',
+          author: '',
+          isbn: '',
+          category: '',
+          publisher: '',
+          total_copies: 1,
+          description: ''
+        })
+        editingBook.value = null
+      } catch (error) {
+        ElMessage.error(editingBook.value ? '更新失败' : '添加失败')
+      }
     }
-    
-    showAddDialog.value = false
-    resetForm()
-  } catch (error) {
-    ElMessage.error(error.response?.data?.error || '操作失败')
-  }
-}
-
-const resetForm = () => {
-  editingBook.value = null
-  Object.assign(bookForm, {
-    title: '',
-    author: '',
-    isbn: '',
-    category: '',
-    publisher: '',
-    total_copies: 1,
-    description: ''
   })
-  bookFormRef.value?.clearValidate()
 }
 
+// 初始化时加载数据
 onMounted(() => {
   fetchBooks()
 })
@@ -259,14 +270,18 @@ onMounted(() => {
 }
 
 .search-bar {
-  margin-bottom: 20px;
   display: flex;
+  margin-bottom: 20px;
   align-items: center;
 }
 
 .pagination {
   margin-top: 20px;
+  text-align: right;
+}
+
+.dialog-footer {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
 }
 </style>

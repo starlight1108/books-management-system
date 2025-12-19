@@ -9,7 +9,7 @@ bp = Blueprint('auth', __name__)
 # 密码验证（至少6位数字）
 PASSWORD_REGEX = re.compile(r'^\d{6,}$')
 
-@bp.route('/register', methods=['POST'])
+@bp.route('/auth/register', methods=['POST'])
 def register():
     try:
         data = request.get_json()
@@ -41,15 +41,16 @@ def register():
         db.session.add(member)
         db.session.commit()
         
-        # 创建访问令牌
-        access_token = create_access_token(identity=member.id)
+        # 创建访问令牌，identity需要是字符串类型
+        access_token = create_access_token(identity=str(member.id))
         
         return jsonify({
             'message': '注册成功',
             'access_token': access_token,
             'user': {
                 'id': member.id,
-                'name': member.name
+                'name': member.name,
+                'role': member.role
             }
         }), 201
         
@@ -57,7 +58,7 @@ def register():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-@bp.route('/login', methods=['POST'])
+@bp.route('/auth/login', methods=['POST'])
 def login():
     try:
         data = request.get_json()
@@ -75,27 +76,28 @@ def login():
         if member.status != 'active':
             return jsonify({'error': '账户已被禁用，请联系管理员'}), 403
         
-        # 创建访问令牌
-        access_token = create_access_token(identity=member.id)
+        # 创建访问令牌，identity需要是字符串类型
+        access_token = create_access_token(identity=str(member.id))
         
         return jsonify({
             'message': '登录成功',
             'access_token': access_token,
             'user': {
                 'id': member.id,
-                'name': member.name
+                'name': member.name,
+                'role': member.role
             }
         }), 200
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@bp.route('/profile', methods=['GET'])
+@bp.route('/auth/profile', methods=['GET'])
 @jwt_required()
 def get_profile():
     try:
-        # 获取当前用户ID
-        current_user_id = get_jwt_identity()
+        # 获取当前用户ID，并转换为整数类型
+        current_user_id = int(get_jwt_identity())
         
         # 查询用户信息
         member = Member.query.get(current_user_id)
@@ -109,6 +111,7 @@ def get_profile():
                 'phone': member.phone,
                 'join_date': member.join_date.isoformat() if member.join_date else None,
                 'status': member.status,
+                'role': member.role,
                 'max_borrow_limit': member.max_borrow_limit
             }
         }), 200
@@ -116,7 +119,7 @@ def get_profile():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@bp.route('/change-password', methods=['POST'])
+@bp.route('/auth/change-password', methods=['POST'])
 @jwt_required()
 def change_password():
     try:

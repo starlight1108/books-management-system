@@ -33,6 +33,28 @@ export const useMemberStore = defineStore('member', {
         console.error('添加会员失败:', error)
         throw error
       }
+    },
+
+    async updateMember(memberId, memberData) {
+      try {
+        const response = await api.updateMember(memberId, memberData)
+        await this.fetchMembers()
+        return response.data
+      } catch (error) {
+        console.error('更新会员失败:', error)
+        throw error
+      }
+    },
+
+    async deleteMember(memberId) {
+      try {
+        const response = await api.deleteMember(memberId)
+        await this.fetchMembers()
+        return response.data
+      } catch (error) {
+        console.error('删除会员失败:', error)
+        throw error
+      }
     }
   }
 })
