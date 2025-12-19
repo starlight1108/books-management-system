@@ -1,5 +1,6 @@
 # Python编译文件和缓存目录
 __pycache__/
+*.pyc
 *.py[cod]
 *$py.class
 

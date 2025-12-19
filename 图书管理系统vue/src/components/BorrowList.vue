@@ -85,7 +85,7 @@
             <p><strong>ISBN:</strong> {{ selectedBook.isbn }}</p>
           </div>
         </el-form-item>
-        <el-form-item label="选择会员" prop="member_id">
+        <el-form-item label="选择用户" prop="member_id">
           <el-select
             v-model="borrowForm.member_id"
             placeholder="请输入手机号搜索"
