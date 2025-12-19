@@ -13,6 +13,7 @@ class Member(db.Model):
     address = db.Column(db.Text)
     join_date = db.Column(db.Date, default=datetime.utcnow)
     status = db.Column(db.String(20), default='active')  # active, inactive
+    role = db.Column(db.String(20), default='user')  # user, admin
     max_borrow_limit = db.Column(db.Integer, default=5)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -41,6 +42,7 @@ class Member(db.Model):
             'address': self.address,
             'join_date': self.join_date.isoformat() if self.join_date else None,
             'status': self.status,
+            'role': self.role,
             'max_borrow_limit': self.max_borrow_limit,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat()

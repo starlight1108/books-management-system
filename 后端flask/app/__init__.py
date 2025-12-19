@@ -14,8 +14,8 @@ def create_app():
     # 初始化JWT
     jwt = JWTManager(app)
     
-    # 配置CORS，允许前端地址访问
-    CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174", "http://127.0.0.1:5174"]}})
+    # 配置CORS，允许所有来源访问
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
     
     # 注册蓝图
     from app.routes import books, members, borrows, statistics, auth

@@ -1,12 +1,15 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.extensions import db
 from app.models.member import Member
 from app.models.borrow import Borrow
+from app.utils.auth import admin_required, self_or_admin_required
 from datetime import datetime
 
 bp = Blueprint('members', __name__)
 
 @bp.route('/members', methods=['GET'])
+@admin_required
 def get_members():
     try:
         page = request.args.get('page', 1, type=int)
@@ -44,6 +47,7 @@ def get_members():
         return jsonify({'error': str(e)}), 500
 
 @bp.route('/members/<int:member_id>', methods=['GET'])
+@self_or_admin_required
 def get_member(member_id):
     try:
         member = Member.query.get_or_404(member_id)
@@ -58,13 +62,14 @@ def get_member(member_id):
         return jsonify({'error': str(e)}), 500
 
 @bp.route('/members', methods=['POST'])
+@admin_required
 def add_member():
     try:
         data = request.get_json()
         
         # 验证必填字段
-        if not data.get('name') or not data.get('email'):
-            return jsonify({'error': '姓名和邮箱为必填项'}), 400
+        if not data.get('name') or not data.get('email') or not data.get('password'):
+            return jsonify({'error': '姓名、邮箱和密码为必填项'}), 400
         
         # 检查邮箱是否已存在
         existing_member = Member.query.filter_by(email=data['email']).first()
@@ -89,6 +94,9 @@ def add_member():
             max_borrow_limit=data.get('max_borrow_limit', 5)
         )
         
+        # 设置密码
+        member.set_password(data['password'])
+        
         db.session.add(member)
         db.session.commit()
         
@@ -99,22 +107,35 @@ def add_member():
         return jsonify({'error': str(e)}), 500
 
 @bp.route('/members/<int:member_id>', methods=['PUT'])
+@self_or_admin_required
 def update_member(member_id):
     try:
         member = Member.query.get_or_404(member_id)
         data = request.get_json()
         
+        # 获取当前用户信息
+        current_user_id = int(get_jwt_identity())
+        current_user = Member.query.get(current_user_id)
+        
         # 更新字段
         if 'name' in data:
+            # 检查用户名是否重复
+            if data['name'] != member.name:
+                existing_member = Member.query.filter_by(name=data['name']).first()
+                if existing_member:
+                    return jsonify({'error': '用户名已存在'}), 400
             member.name = data['name']
         if 'phone' in data:
             member.phone = data['phone']
         if 'address' in data:
             member.address = data['address']
-        if 'status' in data:
-            member.status = data['status']
-        if 'max_borrow_limit' in data:
-            member.max_borrow_limit = data['max_borrow_limit']
+        
+        # 只有管理员可以修改状态和借阅限制
+        if current_user.role == 'admin':
+            if 'status' in data:
+                member.status = data['status']
+            if 'max_borrow_limit' in data:
+                member.max_borrow_limit = data['max_borrow_limit']
         
         # 检查邮箱是否重复
         if 'email' in data and data['email'] != member.email:
@@ -133,6 +154,10 @@ def update_member(member_id):
             else:
                 member.join_date = None
         
+        # 更新密码（如果提供）
+        if 'password' in data:
+            member.set_password(data['password'])
+        
         db.session.commit()
         
         return jsonify(member.to_dict()), 200
@@ -142,9 +167,14 @@ def update_member(member_id):
         return jsonify({'error': str(e)}), 500
 
 @bp.route('/members/<int:member_id>', methods=['DELETE'])
+@admin_required
 def delete_member(member_id):
     try:
         member = Member.query.get_or_404(member_id)
+        
+        # 禁止删除管理员用户
+        if member.role == 'admin':
+            return jsonify({'error': '管理员用户无法删除'}), 400
         
         # 检查是否有未归还的借阅记录
         active_borrows = Borrow.query.filter_by(member_id=member_id, status='borrowed').count()
@@ -164,6 +194,7 @@ def delete_member(member_id):
         return jsonify({'error': str(e)}), 500
 
 @bp.route('/members/<int:member_id>/borrows', methods=['GET'])
+@self_or_admin_required
 def get_member_borrows(member_id):
     try:
         member = Member.query.get_or_404(member_id)

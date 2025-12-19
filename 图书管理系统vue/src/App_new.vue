@@ -17,26 +17,23 @@
           >
             <el-menu-item index="/books">
               <el-icon><Reading /></el-icon>
-              <span>{{ authStore.isAdmin ? '图书管理' : '图书' }}</span>
+              <span>图书管理</span>
             </el-menu-item>
-            <!-- 只有管理员才能看到会员管理 -->
-            <el-menu-item index="/members" v-if="authStore.isAdmin">
+            <el-menu-item v-if="isAdmin" index="/members">
               <el-icon><User /></el-icon>
               <span>会员管理</span>
             </el-menu-item>
-            <!-- 管理员显示借阅管理，普通用户显示借阅历史 -->
             <el-menu-item index="/borrows">
               <el-icon><Document /></el-icon>
-              <span>{{ authStore.isAdmin ? '借阅管理' : '借阅历史' }}</span>
+              <span>借阅管理</span>
             </el-menu-item>
-            <!-- 只有管理员才能看到统计概览 -->
-            <el-menu-item index="/statistics" v-if="authStore.isAdmin">
+            <el-menu-item v-if="isAdmin" index="/statistics">
               <el-icon><TrendCharts /></el-icon>
               <span>统计概览</span>
             </el-menu-item>
           </el-menu>
         </el-aside>
-        
+
         <el-container>
           <el-header class="header">
             <div class="header-content">
@@ -56,14 +53,14 @@
               </div>
             </div>
           </el-header>
-          
+
           <el-main class="main-content">
             <router-view />
           </el-main>
         </el-container>
       </el-container>
     </template>
-    
+
     <!-- 登录和注册页面直接显示路由内容 -->
     <template v-else>
       <router-view />
@@ -72,7 +69,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Reading, User, Document, TrendCharts, ArrowDown } from '@element-plus/icons-vue'
@@ -88,6 +85,11 @@ const isAuthPage = computed(() => {
   return route.path === '/login' || route.path === '/register'
 })
 
+// 判断是否为管理员
+const isAdmin = computed(() => {
+  return authStore.isAdmin
+})
+
 // 处理下拉菜单命令
 const handleCommand = (command) => {
   if (command === 'logout') {
@@ -99,6 +101,7 @@ const handleCommand = (command) => {
       // 使用auth store登出
       authStore.logout()
       ElMessage.success('已退出登录')
+
       // 跳转到登录页
       router.push('/login')
     }).catch(() => {
@@ -107,34 +110,12 @@ const handleCommand = (command) => {
   }
 }
 
-// 检查用户登录状态并更新用户名
-const checkUserStatus = () => {
-  const userStr = localStorage.getItem('user')
-  if (userStr) {
-    try {
-      const userData = JSON.parse(userStr)
-      username.value = userData.name  // 获取用户名
-    } catch (error) {
-      console.error('解析用户信息失败:', error)
-      username.value = ''
-    }
-  } else {
-    username.value = ''
-  }
-}
-
-// 页面加载时检查登录状态
+// 页面加载时检查登录状态并获取用户名
 onMounted(() => {
-  checkUserStatus()
-})
-
-// 监听路由变化，每次切换页面时检查用户状态
-watch(
-  () => route.path,
-  () => {
-    checkUserStatus()
+  if (authStore.isAuthenticated && authStore.user) {
+    username.value = authStore.user.name
   }
-)
+})
 </script>
 
 <style>
