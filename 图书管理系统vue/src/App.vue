@@ -22,7 +22,7 @@
             <!-- 只有管理员才能看到会员管理 -->
             <el-menu-item index="/members" v-if="authStore.isAdmin">
               <el-icon><User /></el-icon>
-              <span>会员管理</span>
+              <span>用户管理</span>
             </el-menu-item>
             <!-- 管理员显示借阅管理，普通用户显示借阅历史 -->
             <el-menu-item index="/borrows">

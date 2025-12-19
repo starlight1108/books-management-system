@@ -1,10 +1,10 @@
 <template>
   <div class="member-list">
     <div class="header">
-      <h2>会员管理</h2>
+      <h2>用户管理</h2>
       <el-button type="primary" @click="showAddDialog = true">
         <el-icon><Plus /></el-icon>
-        添加会员
+        添加用户
       </el-button>
     </div>
 
@@ -14,9 +14,9 @@
       <el-table-column prop="email" label="邮箱" width="200" />
       <el-table-column prop="phone" label="电话" width="120" />
       <el-table-column prop="address" label="地址" min-width="200" show-overflow-tooltip />
-      <el-table-column prop="membership_date" label="入会日期" width="120">
+      <el-table-column prop="join_date" label="注册日期" width="120">
         <template #default="{ row }">
-          {{ formatDate(row.membership_date) }}
+          {{ formatDate(row.join_date) }}
         </template>
       </el-table-column>
       <el-table-column prop="status" label="状态" width="80">
@@ -44,7 +44,7 @@
     <!-- 添加会员对话框 -->
     <el-dialog
       v-model="showAddDialog"
-      :title="editingMember ? '编辑会员' : '添加会员'"
+      :title="editingMember ? '编辑用户' : '添加用户'"
       width="500px"
     >
       <el-form :model="memberForm" :rules="rules" ref="memberFormRef" label-width="80px">
