@@ -19,7 +19,7 @@
               <el-icon><Reading /></el-icon>
               <span>{{ authStore.isAdmin ? '图书管理' : '图书' }}</span>
             </el-menu-item>
-            <!-- 只有管理员才能看到会员管理 -->
+            <!-- 只有管理员才能看到用户管理 -->
             <el-menu-item index="/members" v-if="authStore.isAdmin">
               <el-icon><User /></el-icon>
               <span>用户管理</span>

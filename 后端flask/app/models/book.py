@@ -21,6 +21,16 @@ class Book(db.Model):
     # 与借阅记录的关系
     borrows = db.relationship('Borrow', backref='book', lazy=True)
     
+    def get_borrowed_count(self):
+        """获取当前借阅中的图书数量"""
+        from app.models.borrow import Borrow
+        return Borrow.query.filter_by(book_id=self.id, status='borrowed').count()
+    
+    def update_available_copies(self):
+        """更新可借阅数：总册数 - 已借阅数"""
+        borrowed_count = self.get_borrowed_count()
+        self.available_copies = max(0, self.total_copies - borrowed_count)
+    
     def to_dict(self):
         return {
             'id': self.id,

@@ -103,8 +103,8 @@ def borrow_book():
             status='borrowed'
         )
 
-        # 更新图书库存
-        book.available_copies -= 1
+        # 更新图书库存（使用自动计算方法）
+        book.update_available_copies()
 
         db.session.add(borrow)
         db.session.commit()
@@ -136,10 +136,10 @@ def return_book(borrow_id):
         borrow.status = 'returned'
         borrow.return_date = datetime.utcnow()
 
-        # 更新图书库存
+        # 更新图书库存（使用自动计算方法）
         book = Book.query.get(borrow.book_id)
         if book:
-            book.available_copies += 1
+            book.update_available_copies()
 
         db.session.commit()
 
@@ -169,10 +169,10 @@ def update_borrow(borrow_id):
             borrow.status = data['status']
             if data['status'] == 'returned' and not borrow.return_date:
                 borrow.return_date = datetime.utcnow()
-                # 更新图书库存
+                # 更新图书库存（使用自动计算方法）
                 book = Book.query.get(borrow.book_id)
                 if book:
-                    book.available_copies += 1
+                    book.update_available_copies()
 
         db.session.commit()
 
@@ -192,7 +192,7 @@ def delete_borrow(borrow_id):
         if borrow.status == 'borrowed':
             book = Book.query.get(borrow.book_id)
             if book:
-                book.available_copies += 1
+                book.update_available_copies()
 
         db.session.delete(borrow)
         db.session.commit()
