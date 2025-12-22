@@ -58,6 +58,20 @@ venv.bak/
 # 操作系统
 .DS_Store
 Thumbs.db
-后端flask/__pycache__/config.cpython-313.pyc
-后端flask/app/__pycache__/__init__.cpython-313.pyc
-后端flask/app/models/__pycache__/member.cpython-313.pyc
+
+# 数据库文件（避免提交数据库到版本控制）
+*.db
+*.sqlite
+*.sqlite3
+
+# 前端项目相关
+图书管理系统vue/node_modules/
+图书管理系统vue/dist/
+图书管理系统vue/.vite/
+图书管理系统vue/.vite-temp/
+图书管理系统vue/.vue-global-types/
+图书管理系统vue/coverage/
+图书管理系统vue/*.tsbuildinfo
+
+# 日志文件
+*.log
