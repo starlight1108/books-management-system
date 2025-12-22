@@ -38,18 +38,24 @@
 
     <el-table :data="bookStore.books" style="width: 100%" v-loading="bookStore.loading">
       <el-table-column prop="id" label="ID" width="60" />
-      <el-table-column prop="title" label="书名" min-width="200" show-overflow-tooltip />
+      <el-table-column prop="title" label="书名" min-width="200" show-overflow-tooltip>
+        <template #default="{ row }">
+          <el-button type="primary" link @click="viewBookDetail(row)">{{ row.title }}</el-button>
+        </template>
+      </el-table-column>
       <el-table-column prop="author" label="作者" width="120" />
       <el-table-column prop="isbn" label="ISBN" width="130" />
       <el-table-column prop="category" label="分类" width="80" />
       <el-table-column prop="total_copies" label="总册数" width="80" align="center" />
       <el-table-column prop="available_copies" label="可借册数" width="90" align="center" />
       <el-table-column prop="publisher" label="出版社" width="150" show-overflow-tooltip />
-      <!-- 只有管理员才能看到操作列 -->
-      <el-table-column v-if="authStore.isAdmin" label="操作" width="150" fixed="right">
+      <!-- 操作列 -->
+      <el-table-column label="操作" width="200" fixed="right">
         <template #default="{ row }">
-          <el-button type="primary" link @click="editBook(row)">编辑</el-button>
-          <el-button type="danger" link @click="deleteBook(row)">删除</el-button>
+          <el-button type="primary" link @click="viewBookDetail(row)">查看详情</el-button>
+          <!-- 只有管理员才能看到编辑和删除按钮 -->
+          <el-button v-if="authStore.isAdmin" type="primary" link @click="editBook(row)">编辑</el-button>
+          <el-button v-if="authStore.isAdmin" type="danger" link @click="deleteBook(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -116,11 +122,13 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search } from '@element-plus/icons-vue'
 import { useBookStore } from '@/stores/book'
 import { useAuthStore } from '@/stores/auth'
 
+const router = useRouter()
 const bookStore = useBookStore()
 const authStore = useAuthStore()
 
@@ -191,6 +199,10 @@ const editBook = (book) => {
     description: book.description || ''
   })
   showAddDialog.value = true
+}
+
+const viewBookDetail = (book) => {
+  router.push(`/books/${book.id}`)
 }
 
 const deleteBook = async (book) => {

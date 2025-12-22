@@ -29,6 +29,11 @@
               <el-icon><Document /></el-icon>
               <span>{{ authStore.isAdmin ? '借阅管理' : '借阅历史' }}</span>
             </el-menu-item>
+            <!-- 个人评论管理 - 只对普通用户可见 -->
+            <el-menu-item index="/my-reviews" v-if="!authStore.isAdmin">
+              <el-icon><ChatDotRound /></el-icon>
+              <span>我的评论</span>
+            </el-menu-item>
             <!-- 只有管理员才能看到统计概览 -->
             <el-menu-item index="/statistics" v-if="authStore.isAdmin">
               <el-icon><TrendCharts /></el-icon>
@@ -75,7 +80,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Reading, User, Document, TrendCharts, ArrowDown } from '@element-plus/icons-vue'
+import { Reading, User, Document, TrendCharts, ArrowDown, ChatDotRound } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()

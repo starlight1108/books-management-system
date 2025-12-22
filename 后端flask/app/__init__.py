@@ -18,12 +18,13 @@ def create_app():
     CORS(app, resources={r"/api/*": {"origins": "*"}})
     
     # 注册蓝图
-    from app.routes import books, members, borrows, statistics, auth
+    from app.routes import books, members, borrows, statistics, auth, reviews
     app.register_blueprint(books.bp, url_prefix='/api')
     app.register_blueprint(members.bp, url_prefix='/api')
     app.register_blueprint(borrows.bp, url_prefix='/api')
     app.register_blueprint(statistics.bp, url_prefix='/api')
     app.register_blueprint(auth.bp, url_prefix='/api')
+    app.register_blueprint(reviews.bp, url_prefix='/api')
     
     # 创建数据库表
     with app.app_context():
