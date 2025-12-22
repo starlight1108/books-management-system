@@ -59,10 +59,7 @@ venv.bak/
 .DS_Store
 Thumbs.db
 
-# 数据库文件（避免提交数据库到版本控制）
-*.db
-*.sqlite
-*.sqlite3
+
 
 # 前端项目相关
 图书管理系统vue/node_modules/
