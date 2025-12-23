@@ -67,6 +67,10 @@ export default {
     return api.get('/books', { params })
   },
   
+  getBookDetail(bookId) {
+    return api.get(`/books/${bookId}`)
+  },
+  
   addBook(bookData) {
     return api.post('/books', bookData)
   },
@@ -112,5 +116,47 @@ export default {
   // 统计信息
   getStatistics() {
     return api.get('/statistics')
+  },
+
+  // 评论管理
+  getBookReviews(bookId, params = {}) {
+    return api.get(`/books/${bookId}/reviews`, { params })
+  },
+  
+  addReview(bookId, reviewData) {
+    return api.post(`/books/${bookId}/reviews`, reviewData)
+  },
+  
+  updateReview(reviewId, reviewData) {
+    return api.put(`/reviews/${reviewId}`, reviewData)
+  },
+  
+  deleteReview(reviewId) {
+    return api.delete(`/reviews/${reviewId}`)
+  },
+  
+  getMyReviews(params = {}) {
+    return api.get('/reviews/my-reviews', { params })
+  },
+  
+  // 预约管理
+  createReservation(reservationData) {
+    return api.post('/reservations', reservationData)
+  },
+  
+  getMyReservations(params = {}) {
+    return api.get('/reservations/my-reservations', { params })
+  },
+  
+  getReservations(params = {}) {
+    return api.get('/reservations', { params })
+  },
+  
+  approveReservation(reservationId) {
+    return api.put(`/reservations/${reservationId}/approve`)
+  },
+  
+  cancelReservation(reservationId) {
+    return api.put(`/reservations/${reservationId}/cancel`)
   }
 }

@@ -12,42 +12,60 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/login'
+      redirect: '/books'
     },
     {
-      path: '/login',
-      name: 'Login',
-      component: Login
-    },
-    {
-      path: '/register',
-      name: 'Register',
-      component: Register
-    },
-    {
-      path: '/books',
-      name: 'Books',
-      component: BookList,
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/members',
-      name: 'Members',
-      component: MemberList,
-      meta: { requiresAuth: true, requiresAdmin: true }
-    },
-    {
-      path: '/borrows',
-      name: 'Borrows',
-      component: BorrowList,
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/statistics',
-      name: 'Statistics',
-      component: Statistics,
-      meta: { requiresAuth: true, requiresAdmin: true }
-    }
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/components/Login.vue')
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/components/Register.vue')
+  },
+  {
+    path: '/books',
+    name: 'Books',
+    component: () => import('@/components/BookList.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/books/:id',
+    name: 'BookDetail',
+    component: () => import('@/components/BookDetail.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/borrows',
+    name: 'Borrows',
+    component: () => import('@/components/BorrowList.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/members',
+    name: 'Members',
+    component: () => import('@/components/MemberList.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/statistics',
+    name: 'Statistics',
+    component: () => import('@/components/Statistics.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/my-reviews',
+    name: 'MyReviews',
+    component: () => import('@/components/MyReviews.vue'),
+    meta: { requiresAuth: true, requiresNormalUser: true }
+  },
+  {
+    path: '/reservations',
+    name: 'Reservations',
+    component: () => import('@/components/ReservationManagement.vue'),
+    meta: { requiresAuth: true }
+  }
   ],
 })
 
@@ -57,12 +75,17 @@ router.beforeEach((to, from, next) => {
 
   // 检查是否需要管理员权限的路由
   const requiresAdmin = to.meta.requiresAdmin || false
+  // 检查是否需要普通用户权限的路由
+  const requiresNormalUser = to.meta.requiresNormalUser || false
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     // 如果需要登录但用户未登录，重定向到登录页
     next('/login')
   } else if (requiresAdmin && !authStore.isAdmin) {
     // 如果需要管理员权限但用户不是管理员，重定向到首页
+    next('/books')
+  } else if (requiresNormalUser && authStore.isAdmin) {
+    // 如果需要普通用户权限但用户是管理员，重定向到首页
     next('/books')
   } else if ((to.path === '/login' || to.path === '/register') && authStore.isAuthenticated) {
     // 如果用户已登录但访问登录/注册页，重定向到首页

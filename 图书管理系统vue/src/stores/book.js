@@ -4,6 +4,7 @@ import api from '@/services/api'
 export const useBookStore = defineStore('book', {
   state: () => ({
     books: [],
+    currentBook: null,
     currentPage: 1,
     totalPages: 1,
     totalBooks: 0,
@@ -60,6 +61,22 @@ export const useBookStore = defineStore('book', {
       } catch (error) {
         console.error('删除图书失败:', error)
         throw error
+      }
+    },
+
+    async fetchBookDetail(bookId) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await api.getBookDetail(bookId)
+        this.currentBook = response.data
+        return response.data
+      } catch (error) {
+        this.error = error.message
+        console.error('获取图书详情失败:', error)
+        throw error
+      } finally {
+        this.loading = false
       }
     }
   }

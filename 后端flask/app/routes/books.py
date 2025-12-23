@@ -80,7 +80,7 @@ def add_book():
             publish_date=publish_date,
             category=data.get('category'),
             total_copies=data.get('total_copies', 1),
-            available_copies=data.get('available_copies', data.get('total_copies', 1)),
+            available_copies=data.get('total_copies', 1),  # 新添加的图书，可借阅数等于总册数
             location=data.get('location'),
             description=data.get('description')
         )
@@ -111,8 +111,8 @@ def update_book(book_id):
             book.category = data['category']
         if 'total_copies' in data:
             book.total_copies = data['total_copies']
-        if 'available_copies' in data:
-            book.available_copies = data['available_copies']
+            # 修改总册数时，自动更新可借阅数
+            book.update_available_copies()
         if 'location' in data:
             book.location = data['location']
         if 'description' in data:

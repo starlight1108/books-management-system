@@ -3,6 +3,26 @@ from flask import jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.member import Member
 
+def login_required(f):
+    """装饰器：验证用户是否已登录"""
+    @wraps(f)
+    @jwt_required()
+    def decorated_function(*args, **kwargs):
+        current_user_id = get_jwt_identity()
+        if not current_user_id:
+            return jsonify({'error': '需要登录'}), 401
+        return f(*args, **kwargs)
+    return decorated_function
+
+def is_admin():
+    """检查当前用户是否为管理员"""
+    current_user_id = get_jwt_identity()
+    if not current_user_id:
+        return False
+    
+    user = Member.query.get(int(current_user_id))
+    return user and user.role == 'admin'
+
 def admin_required(f):
     """装饰器：验证用户是否为管理员"""
     @wraps(f)
