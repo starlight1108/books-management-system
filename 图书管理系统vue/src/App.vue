@@ -34,6 +34,11 @@
               <el-icon><ChatDotRound /></el-icon>
               <span>我的评论</span>
             </el-menu-item>
+            <!-- 预约管理 -->
+            <el-menu-item index="/reservations">
+              <el-icon><Clock /></el-icon>
+              <span>{{ authStore.isAdmin ? '预约管理' : '我的预约' }}</span>
+            </el-menu-item>
             <!-- 只有管理员才能看到统计概览 -->
             <el-menu-item index="/statistics" v-if="authStore.isAdmin">
               <el-icon><TrendCharts /></el-icon>

@@ -53,6 +53,25 @@
             <span class="label">描述：</span>
             <span class="value">{{ book.description }}</span>
           </div>
+          
+          <!-- 预约按钮 -->
+          <div class="action-buttons" v-if="authStore.isAuthenticated && !authStore.isAdmin">
+            <el-button 
+              v-if="book.available_copies <= 0" 
+              type="primary" 
+              @click="createReservation"
+              :loading="reservationLoading"
+            >
+              预约图书
+            </el-button>
+            <el-button 
+              v-else 
+              type="success" 
+              disabled
+            >
+              可借阅
+            </el-button>
+          </div>
         </div>
       </el-card>
     </div>
@@ -175,6 +194,7 @@ import { ArrowLeft } from '@element-plus/icons-vue'
 import { useBookStore } from '@/stores/book'
 import { useReviewStore } from '@/stores/review'
 import { useAuthStore } from '@/stores/auth'
+import api from '@/services/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -201,6 +221,50 @@ const editForm = reactive({
   rating: 0,
   content: ''
 })
+
+// 预约相关
+const reservationLoading = ref(false)
+
+// 创建预约
+const createReservation = async () => {
+  try {
+    reservationLoading.value = true
+    
+    const response = await api.createReservation({
+      book_id: parseInt(bookId.value)
+    })
+    
+    // 直接显示成功消息，因为如果请求失败会进入catch块
+    ElMessage.success(response.data.message || '预约成功')
+    
+    // 刷新图书信息
+    await bookStore.fetchBookDetail(bookId.value)
+    
+  } catch (error) {
+    // 只有在确实发生错误时才显示错误消息
+    if (error.response) {
+      // 服务器返回了错误响应
+      const errorMessage = error.response.data?.error || '预约失败'
+      
+      // 根据不同的错误类型显示更具体的提示
+      if (errorMessage.includes('已经预约了该图书')) {
+        ElMessage.warning('您已经预约了该图书，请勿重复预约')
+      } else if (errorMessage.includes('已经借阅了该图书')) {
+        ElMessage.warning('您已经借阅了该图书，无需重复预约')
+      } else {
+        ElMessage.error(errorMessage)
+      }
+    } else if (error.request) {
+      // 请求已发送但没有收到响应
+      ElMessage.error('网络错误，请检查网络连接')
+    } else {
+      // 其他错误
+      ElMessage.error('预约失败，请稍后重试')
+    }
+  } finally {
+    reservationLoading.value = false
+  }
+}
 
 const reviewRules = {
   rating: [{ required: true, message: '请选择评分', trigger: 'change' }],

@@ -137,5 +137,26 @@ export default {
   
   getMyReviews(params = {}) {
     return api.get('/reviews/my-reviews', { params })
+  },
+  
+  // 预约管理
+  createReservation(reservationData) {
+    return api.post('/reservations', reservationData)
+  },
+  
+  getMyReservations(params = {}) {
+    return api.get('/reservations/my-reservations', { params })
+  },
+  
+  getReservations(params = {}) {
+    return api.get('/reservations', { params })
+  },
+  
+  approveReservation(reservationId) {
+    return api.put(`/reservations/${reservationId}/approve`)
+  },
+  
+  cancelReservation(reservationId) {
+    return api.put(`/reservations/${reservationId}/cancel`)
   }
 }

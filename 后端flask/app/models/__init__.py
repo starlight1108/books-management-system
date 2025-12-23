@@ -3,5 +3,6 @@ from .book import Book
 from .member import Member
 from .borrow import Borrow
 from .review import Review
+from .reservation import Reservation
 
-__all__ = ['Book', 'Member', 'Borrow', 'Review']
+__all__ = ['Book', 'Member', 'Borrow', 'Review', 'Reservation']
