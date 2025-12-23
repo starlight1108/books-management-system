@@ -101,6 +101,9 @@
         <el-form-item label="总册数" prop="total_copies">
           <el-input-number v-model="bookForm.total_copies" :min="1" :max="999" />
         </el-form-item>
+        <el-form-item label="位置信息">
+          <el-input v-model="bookForm.location" placeholder="请输入图书位置信息（如：A区3排2号架）" />
+        </el-form-item>
         <el-form-item label="描述">
           <el-input
             v-model="bookForm.description"
@@ -147,6 +150,7 @@ const bookForm = reactive({
   category: '',
   publisher: '',
   total_copies: 1,
+  location: '',
   description: ''
 })
 
@@ -196,6 +200,7 @@ const editBook = (book) => {
     category: book.category || '',
     publisher: book.publisher || '',
     total_copies: book.total_copies,
+    location: book.location || '',
     description: book.description || ''
   })
   showAddDialog.value = true
@@ -253,6 +258,7 @@ const submitForm = async () => {
           category: '',
           publisher: '',
           total_copies: 1,
+          location: '',
           description: ''
         })
         editingBook.value = null

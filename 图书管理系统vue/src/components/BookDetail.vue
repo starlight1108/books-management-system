@@ -45,6 +45,10 @@
             <span class="label">可借册数：</span>
             <span class="value">{{ book.available_copies }}</span>
           </div>
+          <div class="detail-row" v-if="book.location">
+            <span class="label">位置：</span>
+            <span class="value">{{ book.location }}</span>
+          </div>
           <div class="detail-row" v-if="book.description">
             <span class="label">描述：</span>
             <span class="value">{{ book.description }}</span>
