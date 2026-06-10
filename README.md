@@ -21,7 +21,7 @@
 ### 后端
 - Flask Web框架
 - SQLAlchemy ORM
-- MySQL数据库
+- sqlite数据库
 - JWT认证
 - Flask-CORS跨域支持
 
